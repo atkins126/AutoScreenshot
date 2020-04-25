@@ -5,6 +5,8 @@
 Auto Screenshot
 ===============
 
+[![GitHub release](https://img.shields.io/github/release/artem78/AutoScreenshot.svg)](../../releases/latest)
+
 This tool takes capture of the screen every X minutes.
 
 ## Screenshots
