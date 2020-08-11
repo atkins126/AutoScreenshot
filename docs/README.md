@@ -11,6 +11,7 @@ Auto Screenshot
 **Auto Screenshot** -- Windows application for automatic taking screenshots with specified time interval.
 
 ## Features
+* Free to use
 * Automatic saving screenshots of full screen with specified time interval
 * Saving images in PNG, JPEG, BMP or GIF format
 * Pause capture when user is inactive (depending on mouse moves and keyboard events) 
