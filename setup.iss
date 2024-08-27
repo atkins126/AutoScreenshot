@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Auto Screenshot"
-#define MyAppVersion "1.7.2"
+#define MyAppVersion Copy(Revision, 2) ; Drop leading 'v'
 #define MyAppPublisher "Artem Demin"
 #define MyAppURL "https://github.com/artem78/AutoScreenshot#readme"
 #define MyAppExeName "AutoScreenshot.exe"
@@ -23,7 +23,7 @@ DefaultDirName={pf}\AutoScreenshot
 DisableProgramGroupPage=yes
 LicenseFile=LICENSE.txt
 OutputDir=build\setup
-OutputBaseFilename=autoscreenshot_{#MyAppVersion}_setup
+OutputBaseFilename=AutoScreenshot_v{#MyAppVersion}_Windows_setup
 Compression=lzma
 SolidCompression=yes
 
@@ -35,10 +35,14 @@ Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "build\files\AutoScreenshot.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "build\files\lang\*"; DestDir: "{app}\lang"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "AutoScreenshot.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "lang\*"; DestDir: "{app}\lang"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.bak"
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 ; ToDo: Remove config.ini when uninstall or make this optional
+Source: "ssleay32.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "libeay32.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "sounds\*.wav"; DestDir: "{app}\sounds"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "sqlite3.dll"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -50,3 +54,6 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 [Registry]
 ; Remove autorun
 Root: "HKCU"; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueName: "Auto Screenshot"; Flags: uninsdeletekey
+
+[UninstallDelete]
+Type: files; Name: "{app}\config.ini"

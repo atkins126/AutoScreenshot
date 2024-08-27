@@ -1,15 +1,18 @@
 unit uUtils;
+
+{$MODE objfpc}
+
 { Various general usefull functions }
 
 
 interface
 
 uses
-  Windows, uLocalization;
+  {$IfDef Windows}
+  Windows,
+  {$EndIf}
+  uLocalization;
 
-// Retrieves the time (in ms) of the last input event (mouse moved or key pressed).
-// Also works if current application window has no focus (hidden or minimized).
-function LastInput: DWord;
 
 { Formats given string Str. If DateTime not provided, use result of Now().
 
@@ -29,41 +32,30 @@ function LastInput: DWord;
 function FormatDateTime2(const Str: String; const DateTime: TDateTime): String; overload;
 function FormatDateTime2(const Str: String): String; overload;
 
-// Same as IntToStr(), but adds leading zeros before number
-function Int2Str(Val: Integer; LeadingZeros: Integer = 0): String;
-
 // Decodes control characters (like \r, \n, \t and etc.) from given string.
 function DecodeControlCharacters(const Str: WideString): WideString;
 
-{ Returns string with program version. If ShortFormat is True prints release
-  and build values only if they are not equal zero.
+//{ Returns string with program version. If ShortFormat is True prints release
+//  and build values only if they are not equal zero.
+//
+//  Examples:
+//      GetProgramVersionStr(True);
+//
+//      Version   | Result
+//      ----------------------
+//      2.1.0.0   | '2.1'
+//      1.0.0.0   | '1.0'
+//      0.0.0.0   | '0.0'
+//      3.0.1.0   | '3.0.1'
+//      5.6.7.8   | '5.6.7.8'
+//      0.0.0.9   | '0.0.0.9'
+// }
+//
+//function GetProgramVersionStr({HideRealeaseAndBuildIfZero} ShortFormat: Boolean = False): string;
+function GetProgramVersionStr: string;
 
-  Examples:
-      GetProgramVersionStr(True);
-
-      Version   | Result
-      ----------------------
-      2.1.0.0   | '2.1'
-      1.0.0.0   | '1.0'
-      0.0.0.0   | '0.0'
-      3.0.1.0   | '3.0.1'
-      5.6.7.8   | '5.6.7.8'
-      0.0.0.9   | '0.0.0.9'
- }
-
-function GetProgramVersionStr({HideRealeaseAndBuildIfZero} ShortFormat: Boolean = False): string;
-
-// Returns build time from TimeDateStamp PE header
-function GetLinkerTimeStamp: TDateTime{; overload};
-
-{ Removes duplicated slashes from given path.
-  Example:
-      RemoveExtraPathDelimiters('c:\dir1\\dir2\\\file.txt');
-      Result: c:\dir1\dir2\file.txt
-}
-function RemoveExtraPathDelimiters(const Path: String): String;
-
-function JoinPath(const Base: String; const Path: String): String;
+// Returns program build date and time
+function GetBuildDateTime: TDateTime;
 
 function GetLocalComputerName: string;
 
@@ -78,32 +70,47 @@ function GetAlternativeLanguage(const ALangs: TLanguagesArray;
 
 procedure AutoRun(const FileName: String; const AppTitle: String;
     Enabled: Boolean = True);
-function CheckAutoRun(const AppTitle: String): Boolean;
+function CheckAutoRun(const FileName: String; const AppTitle: String): Boolean;
+procedure RunCmdInbackground(ACmd: String);
+function IsPortable: Boolean;
+function GetUserPicturesDir: WideString;
+
+// todo: make tests
+function DirectoryIsEmpty(const ADir: String): Boolean;
+function ParentDirectory(const ADir: String): String;
 
 implementation
 
 uses
-  SysUtils, DateUtils, TntSysUtils, Registry, uLanguages;
+  {$IfDef Windows}
+  WinDirs {???}, Registry,
+  {$EndIf}
+  {$IfDef Linux}
+  Unix, LazUTF8, LazFileUtils,
+  {$EndIf}
+  SysUtils, Classes, DateUtils, StrUtils, uLanguages, Forms {???}, FileInfo, process,
+  FileUtil, LazLogger;
 
-function LastInput: DWord;
-var
-  LInput: TLastInputInfo;
-begin
-  LInput.cbSize := SizeOf(TLastInputInfo);
-  GetLastInputInfo(LInput);
-  Result := GetTickCount - LInput.dwTime;
-end;
+{$IfDef Windows}
+const
+  RegistryAutorunKey = 'Software\Microsoft\Windows\CurrentVersion\Run';
+{$EndIf}
 
 function FormatDateTime2(const Str: String; const DateTime: TDateTime): String;
+  function DecToNum(N: Longint; Len: byte): string;
+  begin
+    Result := Dec2Numb(N, Len, 10);
+  end;
+
 const
   TmplVarsChar = '%';
 begin
-  Result := StringReplace(Str,    TmplVarsChar + 'D', Int2Str(DayOf(DateTime), 2),    [rfReplaceAll]);
-  Result := StringReplace(Result, TmplVarsChar + 'M', Int2Str(MonthOf(DateTime), 2),  [rfReplaceAll]);
-  Result := StringReplace(Result, TmplVarsChar + 'Y', Int2Str(YearOf(DateTime), 4),   [rfReplaceAll]);
-  Result := StringReplace(Result, TmplVarsChar + 'H', Int2Str(HourOf(DateTime), 2),   [rfReplaceAll]);
-  Result := StringReplace(Result, TmplVarsChar + 'N', Int2Str(MinuteOf(DateTime), 2), [rfReplaceAll]);
-  Result := StringReplace(Result, TmplVarsChar + 'S', Int2Str(SecondOf(DateTime), 2), [rfReplaceAll]);
+  Result := StringReplace(Str,    TmplVarsChar + 'D', DecToNum(DayOf(DateTime), 2),    [rfReplaceAll]);
+  Result := StringReplace(Result, TmplVarsChar + 'M', DecToNum(MonthOf(DateTime), 2),  [rfReplaceAll]);
+  Result := StringReplace(Result, TmplVarsChar + 'Y', DecToNum(YearOf(DateTime), 4),   [rfReplaceAll]);
+  Result := StringReplace(Result, TmplVarsChar + 'H', DecToNum(HourOf(DateTime), 2),   [rfReplaceAll]);
+  Result := StringReplace(Result, TmplVarsChar + 'N', DecToNum(MinuteOf(DateTime), 2), [rfReplaceAll]);
+  Result := StringReplace(Result, TmplVarsChar + 'S', DecToNum(SecondOf(DateTime), 2), [rfReplaceAll]);
 end;
 
 function FormatDateTime2(const Str: String): String;
@@ -111,145 +118,90 @@ begin
   Result := FormatDateTime2(Str, Now());
 end;
 
-function Int2Str(Val: Integer; LeadingZeros: Integer): String;
-var
-  Tmp: String;
-begin
-  Result := '';
-
-  Tmp := IntToStr(Abs(Val));
-
-  if Val < 0 then
-    Result := Result + '-';
-
-  if (LeadingZeros > 0) and (LeadingZeros > Length(Tmp)) then
-    Result := Result + StringOfChar('0', LeadingZeros - Length(Tmp));
-
-  Result := Result + Tmp;
-end;
-
 function DecodeControlCharacters(const Str: WideString): WideString;
 begin
-  Result := Tnt_WideStringReplace(Str,    '\r', #13, [rfReplaceAll]);
-  Result := Tnt_WideStringReplace(Result, '\n', #10, [rfReplaceAll]);
-  Result := Tnt_WideStringReplace(Result, '\t', #9,  [rfReplaceAll]);
-  Result := Tnt_WideStringReplace(Result, '\\', '\', [rfReplaceAll]);
+  Result := StringReplace(Str,    '\r', #13, [rfReplaceAll]);
+  Result := StringReplace(Result, '\n', #10, [rfReplaceAll]);
+  Result := StringReplace(Result, '\t', #9,  [rfReplaceAll]);
+  Result := StringReplace(Result, '\\', '\', [rfReplaceAll]);
 end;
 
-{function GetProgramVersionStr: string;
+//function GetProgramVersionStr({HideRealeaseAndBuildIfZero} ShortFormat: Boolean): String;
+//var
+//  FileName: String;
+//  VerInfoSize: Cardinal;
+//  VerValueSize: Cardinal;
+//  Dummy: Cardinal;
+//  PVerInfo: Pointer;
+//  PVerValue: PVSFixedFileInfo;
+//
+//  Major, Minor, Release, Build: Cardinal;
+//begin
+//  // Note: Also we can get version string from FileVersion
+//  // or ProductVersion section
+//
+//  FileName := ParamStr(0);
+//  Result := '';
+//  VerInfoSize := GetFileVersionInfoSize(PChar(FileName), Dummy);
+//  GetMem(PVerInfo, VerInfoSize);
+//  try
+//    if GetFileVersionInfo(PChar(FileName), 0, VerInfoSize, PVerInfo) then
+//      if VerQueryValue(PVerInfo, '\', Pointer(PVerValue), VerValueSize) then
+//        with PVerValue^ do
+//          {Result := Format('v%d.%d.%d build %d', [
+//            HiWord(dwFileVersionMS), //Major
+//            LoWord(dwFileVersionMS), //Minor
+//            HiWord(dwFileVersionLS), //Release
+//            LoWord(dwFileVersionLS)]); //Build}
+//        begin
+//          Major := HiWord(dwFileVersionMS);
+//          Minor := LoWord(dwFileVersionMS);
+//          Release := HiWord(dwFileVersionLS);
+//          Build := LoWord(dwFileVersionLS);
+//
+//          if not {HideRealeaseAndBuildIfZero} ShortFormat then
+//            Result := Format('%d.%d.%d.%d', [Major, Minor, Release, Build])
+//          else
+//          begin
+//            // Writes minor and major parts in any case
+//            Result := Format('%d.%d', [Major, Minor]);
+//
+//            // Writes realease and build only if they exist
+//            if (Release > 0) or (Build > 0) then
+//            begin
+//              Result := Result + '.' + IntToStr(Release);
+//
+//              if Build > 0 then
+//                Result := Result + '.' + IntToStr(Build);
+//            end;
+//          end;
+//        end;
+//  finally
+//    FreeMem(PVerInfo, VerInfoSize);
+//  end;
+//end;
+
+function GetProgramVersionStr: String;
 var
-  Rec: LongRec;
+  FileVerInfo: TFileVersionInfo;
 begin
-  Rec := LongRec(GetFileVersion(ParamStr(0)));
-  Result := Format('%d.%d', [Rec.Hi, Rec.Lo])
-end;}
-
-function GetProgramVersionStr({HideRealeaseAndBuildIfZero} ShortFormat: Boolean): String;
-var
-  FileName: String;
-  VerInfoSize: Cardinal;
-  VerValueSize: Cardinal;
-  Dummy: Cardinal;
-  PVerInfo: Pointer;
-  PVerValue: PVSFixedFileInfo;
-
-  Major, Minor, Release, Build: Cardinal;
-begin
-  // Note: Also we can get version string from FileVersion
-  // or ProductVersion section
-
-  FileName := ParamStr(0);
-  Result := '';
-  VerInfoSize := GetFileVersionInfoSize(PChar(FileName), Dummy);
-  GetMem(PVerInfo, VerInfoSize);
+  FileVerInfo := TFileVersionInfo.Create(Nil);
   try
-    if GetFileVersionInfo(PChar(FileName), 0, VerInfoSize, PVerInfo) then
-      if VerQueryValue(PVerInfo, '\', Pointer(PVerValue), VerValueSize) then
-        with PVerValue^ do
-          {Result := Format('v%d.%d.%d build %d', [
-            HiWord(dwFileVersionMS), //Major
-            LoWord(dwFileVersionMS), //Minor
-            HiWord(dwFileVersionLS), //Release
-            LoWord(dwFileVersionLS)]); //Build}
-        begin
-          Major := HiWord(dwFileVersionMS);
-          Minor := LoWord(dwFileVersionMS);
-          Release := HiWord(dwFileVersionLS);
-          Build := LoWord(dwFileVersionLS);
-
-          if not {HideRealeaseAndBuildIfZero} ShortFormat then
-            Result := Format('%d.%d.%d.%d', [Major, Minor, Release, Build])
-          else
-          begin
-            // Writes minor and major parts in any case
-            Result := Format('%d.%d', [Major, Minor]);
-
-            // Writes realease and build only if they exist
-            if (Release > 0) or (Build > 0) then
-            begin
-              Result := Result + '.' + IntToStr(Release);
-
-              if Build > 0 then
-                Result := Result + '.' + IntToStr(Build);
-            end;
-          end;
-        end;
+    FileVerInfo.ReadFileInfo;
+    Result := FileVerInfo.VersionStrings.Values[{'FileVersion'} 'ProductVersion'];
   finally
-    FreeMem(PVerInfo, VerInfoSize);
+    FileVerInfo.Free;
   end;
 end;
 
-{function LinkerTimeStamp(const FileName: string): TDateTime; overload;
-var
-  LI: TLoadedImage;
+function GetBuildDateTime: TDateTime;
 begin
-  Win32Check(MapAndLoad(PChar(FileName), nil, @LI, False, True));
-  Result := LI.FileHeader.FileHeader.TimeDateStamp / SecsPerDay + UnixDateDelta;
-  UnMapAndLoad(@LI);
-end;}
-
-function GetLinkerTimeStamp: TDateTime{; overload};
-begin
-  Result := PImageNtHeaders(HInstance + Cardinal(PImageDosHeader(HInstance)^
-        ._lfanew))^.FileHeader.TimeDateStamp / SecsPerDay + UnixDateDelta;
-end;
-
-function RemoveExtraPathDelimiters(const Path: String): String;
-var
-  I: Integer;
-  Ch: Char;
-  IsPrevDelim: Boolean;
-begin
-  // Result := StringReplace(Path, PathDelim + PathDelim, PathDelim, [rfReplaceAll]);
-
-  Result := '';
-  IsPrevDelim := False;
-  for I := 1 to Length(Path) do
-  begin
-     Ch := Path[I];
-     if Ch = PathDelim then
-     begin
-       if not IsPrevDelim then
-       begin
-         Result := Result + Ch;
-         IsPrevDelim := True;
-       end;
-     end
-     else
-     begin
-       Result := Result + Ch;
-       IsPrevDelim := False;
-     end;
-  end;
-end;
-
-function JoinPath(const Base: String; const Path: String): String;
-begin
-  Result := IncludeTrailingPathDelimiter(Base) + Path;
-  Result := RemoveExtraPathDelimiters(Result);
+  Result := EncodeDateTime({$I %dateYear%}, {$I %dateMonth%}, {$I %dateDay%},
+            {$I %timeHour%}, {$I %timeMinute%}, {$I %timeSecond%}, 0);
 end;
 
 function GetLocalComputerName: string;
+{$IfDef Windows}
 var
   Size: dword;
   Buf: array [0..MAX_COMPUTERNAME_LENGTH + 1] of char;
@@ -262,8 +214,16 @@ begin
   else
     Result := '';
 end;
+{$EndIf}
+{$IfDef Linux}
+begin
+  //Result := GetEnvironmentVariable('COMPUTERNAME');
+  Result := GetHostName;
+end;
+{$EndIf}
 
 function GetCurrentUserName: string;
+{$IfDef Windows}
 const
   UNLEN = 256; // Not defined in windows.pas
 var
@@ -274,10 +234,24 @@ begin
   Size := UNLEN + 1;
   Res := GetUserName(@Buf, Size);
   if Res and (Size > 0) then
-    Result := Buf
+    //Result := Buf
+    SetString(Result, {Buf} PChar(@Buf[0]), {Length(Buf)} Size - 1)
   else
     Result := '';
 end;
+{$EndIf}
+{$IfDef Linux}
+var
+  Output: {String} AnsiString;
+begin
+  //Result := GetEnvironmentVariable({'USERNAME'} {'USER'} 'LOGNAME');
+
+  Result := '';
+
+  if RunCommand('/bin/bash', ['-c', 'whoami'], Output) then
+    Result := TrimRightSet(Output, [#10, #13]); // Remove ending line break
+end;
+{$EndIf}
 
 {function GetSystemLanguageID: Integer;
 begin
@@ -286,7 +260,12 @@ end;}
 
 function GetSystemLanguageCode: String{[2]};
 begin
+  {$IfDef Windows}
   Result := Iso6391FromLcid(GetUserDefaultLCID);
+  {$EndIf}
+  {$IfDef Linux}
+  Result := GetEnvironmentVariable('LANGUAGE');
+  {$EndIf}
 end;
 
 function GetAlternativeLanguage(const ALangs: TLanguagesArray;
@@ -309,35 +288,79 @@ begin
   Result := ''; // Not found
 end;
 
+{$IfDef Linux}
+function GetAutostartFileName(const AFileName: String): String;
+begin
+  Result := ConcatPaths([GetEnvironmentVariableUTF8('HOME'), '.config',
+            'autostart', DelSpace(ExtractFileNameOnly(AFileName)) + '.desktop']);
+end;
+{$EndIf}
+
 procedure SetAutoRun(const FileName: String; const AppTitle: String);
 const
-  Section = 'Software\Microsoft\Windows\CurrentVersion\Run' + #0;
   Args = '-autorun';
 var
-  Cmd: String;
+  {$IfDef Windows}
+  Reg: TRegistry;
+  {$EndIf}
+  {$IfDef Linux}
+  AutostartFileContent: TStringList;
+  {$EndIf}
+  Cmd, AutostartFile: String;
 begin
   Cmd := '"' + FileName + '" ' + Args;
 
-  with TRegIniFile.Create('') do
+  {$IfDef Windows}
+  Reg := TRegistry.Create(KEY_WRITE);
   try
-    RootKey := HKEY_CURRENT_USER;
-    WriteString(Section, AppTitle, Cmd);
+    Reg.RootKey := HKEY_CURRENT_USER;
+    if Reg.OpenKey(RegistryAutorunKey, True) then
+      Reg.WriteString(AppTitle, Cmd);
   finally
-    Free;
+    Reg.Free;
   end;
+  {$EndIf}
+
+  {$IfDef Linux}
+  AutostartFile := GetAutostartFileName(FileName);
+  ForceDirectories(ExtractFileDir(AutostartFile));
+  AutostartFileContent := TStringList.Create;
+  try
+    with AutostartFileContent do
+    begin
+      Add('[Desktop Entry]');
+      Add('Type=Application');
+      Add('Exec=' + Cmd);
+      Add('Hidden=false');
+      Add('Name=' + AppTitle);
+      SaveToFile(AutostartFile);
+    end;
+  finally
+    AutostartFileContent.Free;
+  end;
+  {$EndIf}
 end;
 
-procedure RemoveAutoRun(const AppTitle: String);
-const
-  Section = 'Software\Microsoft\Windows\CurrentVersion\Run' + #0;
+procedure RemoveAutoRun(const FileName: String; const AppTitle: String);
+{$IfDef Windows}
+var
+  Reg: TRegistry;
+{$EndIf}
 begin
-  with TRegIniFile.Create('') do
+  {$IfDef Windows}
+  Reg := TRegistry.Create(KEY_WRITE);
   try
-    RootKey := HKEY_CURRENT_USER;
-    DeleteKey(Section, AppTitle);
+    Reg.RootKey := HKEY_CURRENT_USER;
+    if Reg.OpenKey(RegistryAutorunKey, False) then
+      Reg.DeleteValue(AppTitle);
   finally
-    Free;
+    Reg.Free;
   end;
+  {$EndIf}
+
+  {$IfDef Linux}
+  DeleteFile(GetAutostartFileName(FileName));
+  {$EndIf}
 end;
 
 procedure AutoRun(const FileName: String; const AppTitle: String;
@@ -346,22 +369,140 @@ begin
   if Enabled then
     SetAutoRun(FileName, AppTitle)
   else
-    RemoveAutoRun(AppTitle);
+    RemoveAutoRun(FileName, AppTitle);
 end;
 
-function CheckAutoRun(const AppTitle: String): Boolean;
-const
-  Section = 'Software\Microsoft\Windows\CurrentVersion\Run' + #0;
+function CheckAutoRun(const FileName: String; const AppTitle: String): Boolean;
+{$IfDef Windows}
+var
+  Reg: TRegistry;
+{$EndIf}
+begin
+  {$IfDef Windows}
+  Result := False;
+  Reg := TRegistry.Create(KEY_READ);
+  try
+    Reg.RootKey := HKEY_CURRENT_USER;
+    if Reg.OpenKeyReadOnly(RegistryAutorunKey) then
+      Result := Reg.ReadString(AppTitle) <> '';
+  finally
+    Reg.Free;
+  end;
+  {$EndIf}
+
+  {$IfDef Linux}
+  Result := FileExists(GetAutostartFileName(FileName));
+  {$EndIf}
+end;
+
+procedure RunCmdInbackground(ACmd: String);
+var
+  proc: TProcess;
+begin
+  proc := TProcess.Create(nil);
+  try
+    {$IfDef Windows}
+    proc.Executable := 'cmd.exe';
+    proc.Parameters.Add('/c');
+    proc.Parameters.Add(ACmd);
+    {$EndIf}
+    {$IfDef Linux}
+    proc.Executable := FindDefaultExecutablePath('bash');
+    proc.Parameters.Add('-c');
+    proc.Parameters.Add(ACmd);
+    {$EndIf}
+    proc.Options := proc.Options + [poNoConsole];
+    proc.Execute;
+  finally
+    proc.Free;
+  end;
+end;
+
+function IsPortable: Boolean;
+{$IfDef Windows}
+var
+  UninstallerFileName: String;
+{$EndIf}
+begin
+  {$IfDef Windows}
+  UninstallerFileName := ExtractFilePath(Application.ExeName) + 'unins000.exe';
+  Result := not FileExists(UninstallerFileName);
+  {$EndIf}
+  {$IfDef Linux}
+  Result := not Application.ExeName.StartsWith('/usr/bin/');
+  {$EndIf}
+end;
+
+function GetUserPicturesDir: WideString;
+{$IfDef Linux}
+var
+  CmdRes: AnsiString;
+{$EndIf}
+begin
+  Result := '';
+
+  {$IfDef Windows}
+  //Result := GetUserDir + 'Pictures';
+  Result := GetWindowsSpecialDirUnicode(CSIDL_MYPICTURES);
+  {$EndIf}
+  {$IfDef Linux}
+  try
+    if RunCommand('xdg-user-dir PICTURES', CmdRes) then
+      Result := Trim(CmdRes);
+  except
+  end;
+
+  if (Result = '') or (not DirectoryExists(Result)) then
+    // As fallback - not 100% guarantee, but most likely
+    Result := ConcatPaths([GetEnvironmentVariable('HOME'), 'Pictures']);
+  {$EndIf}
+
+  Result := IncludeTrailingPathDelimiter(Result);
+end;
+
+function DirectoryIsEmpty(const ADir: String): Boolean;
+var
+  SearchRec: TSearchRec;
 begin
   Result := False;
 
-  with TRegIniFile.Create('') do
-  try
-    RootKey := HKEY_CURRENT_USER;
-    Result := ReadString(Section, AppTitle, '') <> '';
-  finally
-    Free;
+  if FindFirst(ConcatPaths([ADir, '*']), faAnyFile, SearchRec) = 0 then
+  begin
+    Result := True;
+    repeat
+      if (SearchRec.Name = '.') or (SearchRec.Name = '..') then
+        Continue;
+
+      Result := False;
+      Break;
+    until FindNext(SearchRec) <> 0;
+
+    FindClose(SearchRec);
   end;
+end;
+
+function ParentDirectory(const ADir: String): String;
+// https://stackoverflow.com/a/30811944/4108542
+begin
+   Result := ExtractFilePath(ExcludeTrailingPathDelimiter(ADir));
+end;
+
+{$IfDef Windows}
+function FileCreatedTime(const ASearchRec: TSearchRec): TDateTime;
+// Source: https://www.cyberforum.ru/post10364301.html+}
+var
+  t1:TFILETIME;
+  t2:TSYSTEMTIME;
+begin
+  FileTimeToLocalFileTime(ASearchRec.FindData.ftCreationTime,t1);
+  FileTimeToSystemTime(t1,t2);
+  Result := SystemTimeToDateTime(t2);
+end;
+{$EndIf}
+
+function FileModifiedTime(const ASearchRec: TSearchRec): TDateTime; inline;
+begin
+  Result := ASearchRec.TimeStamp;
 end;
 
 end.

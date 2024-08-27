@@ -1,0 +1,520 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectOptions>
+    <Version Value="12"/>
+    <PathDelim Value="\"/>
+    <General>
+      <Flags>
+        <MainUnitHasUsesSectionForAllUnits Value="False"/>
+        <MainUnitHasCreateFormStatements Value="False"/>
+        <MainUnitHasTitleStatement Value="False"/>
+        <CompatibilityMode Value="True"/>
+      </Flags>
+      <SessionStorage Value="InProjectDir"/>
+      <Title Value="Auto Screenshot"/>
+      <Scaled Value="True"/>
+      <UseAppBundle Value="False"/>
+      <ResourceType Value="res"/>
+      <UseXPManifest Value="True"/>
+      <XPManifest>
+        <DpiAware Value="True/PM"/>
+        <TextName Value="Auto Screenshot"/>
+        <TextDesc Value="Automatic screenshot maker"/>
+      </XPManifest>
+      <Icon Value="0"/>
+      <Resources Count="22">
+        <Resource_0 FileName="res\camera_bw.ico" Type="ICON" ResourceName="_CAMERA_BW"/>
+        <Resource_1 FileName="res\camera_flash1.ico" Type="ICON" ResourceName="_CAMERA_FLASH_1"/>
+        <Resource_2 FileName="res\camera_flash2.ico" Type="ICON" ResourceName="_CAMERA_FLASH_2"/>
+        <Resource_3 FileName="res\camera_flash3.ico" Type="ICON" ResourceName="_CAMERA_FLASH_3"/>
+        <Resource_4 FileName="res\camera_flash4.ico" Type="ICON" ResourceName="_CAMERA_FLASH_4"/>
+        <Resource_5 FileName="res\camera_flash5.ico" Type="ICON" ResourceName="_CAMERA_FLASH_5"/>
+        <Resource_6 FileName="res\camera_flash6.ico" Type="ICON" ResourceName="_CAMERA_FLASH_6"/>
+        <Resource_7 FileName="res\camera_flash7.ico" Type="ICON" ResourceName="_CAMERA_FLASH_7"/>
+        <Resource_8 FileName="res\start.bmp" Type="BITMAP" ResourceName="_START_ICON"/>
+        <Resource_9 FileName="res\stop.bmp" Type="BITMAP" ResourceName="_STOP_ICON"/>
+        <Resource_10 FileName="res\logo.png" Type="RCDATA" ResourceName="_LOGO"/>
+        <Resource_11 FileName="res\logo_high_dpi.png" Type="RCDATA" ResourceName="_LOGO_HIGH_DPI"/>
+        <Resource_12 FileName="res\camera.ico" Type="ICON" ResourceName="_CAMERA"/>
+        <Resource_13 FileName="libs/country-flags/country-flags/de_16.png" Type="RCDATA" ResourceName="FLAG_DE"/>
+        <Resource_14 FileName="libs/country-flags/country-flags/gb_16.png" Type="RCDATA" ResourceName="FLAG_EN"/>
+        <Resource_15 FileName="libs/country-flags/country-flags/es_16.png" Type="RCDATA" ResourceName="FLAG_ES"/>
+        <Resource_16 FileName="libs/country-flags/country-flags/fr_16.png" Type="RCDATA" ResourceName="FLAG_FR"/>
+        <Resource_17 FileName="libs/country-flags/country-flags/pt_16.png" Type="RCDATA" ResourceName="FLAG_PT"/>
+        <Resource_18 FileName="libs/country-flags/country-flags/ru_16.png" Type="RCDATA" ResourceName="FLAG_RU"/>
+        <Resource_19 FileName="libs/country-flags/country-flags/tr_16.png" Type="RCDATA" ResourceName="FLAG_TR"/>
+        <Resource_20 FileName="libs/country-flags/country-flags/ua_16.png" Type="RCDATA" ResourceName="FLAG_UK"/>
+        <Resource_21 FileName="libs/country-flags/country-flags/cn_16.png" Type="RCDATA" ResourceName="FLAG_ZH"/>
+      </Resources>
+    </General>
+    <i18n>
+      <EnableI18N LFM="False"/>
+    </i18n>
+    <VersionInfo>
+      <UseVersionInfo Value="True"/>
+      <MajorVersionNr Value="1"/>
+      <MinorVersionNr Value="16"/>
+      <StringTable FileDescription="Automatic screenshot maker" ProductName="Auto Screenshot" ProductVersion="1.16"/>
+    </VersionInfo>
+    <CustomData Count="13">
+      <Item0 Name="lazpackager/copyright" Value="2020-2024, Artem Demin &lt;megabyte1024@ya.ru>"/>
+      <Item1 Name="lazpackager/deb/ppa" Value="ppa:artem78/autoscreenshot"/>
+      <Item2 Name="lazpackager/deb/series" Value="precise"/>
+      <Item3 Name="lazpackager/deb/tpl_changelog" Value="?PACKAGE_NAME? (1.16.0.0-1) precise; urgency=low
+
+  * Added icons for languages in menu
+  * Fixed many &apos;whoami&apos; child processes created in Linux
+  * Remade old screenshot autocleaning feature to protect other files against accidental deletion
+
+ -- ?MAINTAINER? &lt;?MAINTAINER_EMAIL?>  Thu, 09 May 2024 20:03:25 +0300
+
+?PACKAGE_NAME? (1.15.1.0-1) precise; urgency=low
+
+  * Updated Chinese translation up to v1.15
+
+ -- ?MAINTAINER? &lt;?MAINTAINER_EMAIL?>  Thu, 11 Jan 2024 11:16:41 +0300
+
+?PACKAGE_NAME? (1.15.0.0-1) precise; urgency=low
+
+  * Fixed running user command after capture not works
+  * Added option for minimizing to tray when form closed (issue #44)
+  * Added confirmation before exit
+  * Updated Chinese translation
+
+ -- ?MAINTAINER? &lt;?MAINTAINER_EMAIL?>  Sun, 07 Jan 2024 11:57:39 +0300
+
+?PACKAGE_NAME? (1.14.0.0-1) precise; urgency=low
+
+  * Added playing sound effects for start/stop/capture actions (#39)
+  * Increased contrast between active and inactive tray icon (#34)
+  * Fixed possible error in Linux when autostart option is enabled, but ~/.config/autostart/ directory not exists
+
+ -- ?MAINTAINER? &lt;?MAINTAINER_EMAIL?>  Mon, 02 Oct 2023 14:15:02 +0300
+
+?PACKAGE_NAME? (1.13.0.0-1) precise; urgency=low
+
+  * Added old screenshots cleaning feature
+  * Added DEB-package for Linux OS
+  * Removed trailing whitespaces from predefined filename templates
+  * Remade donate window
+
+ -- ?MAINTAINER? &lt;?MAINTAINER_EMAIL?>  Fri, 08 Sep 2023 10:39:27 +0300
+"/>
+      <Item4 Name="lazpackager/deb/tpl_control" Value="Source: ?PACKAGE_NAME?
+Maintainer: ?MAINTAINER? &lt;?MAINTAINER_EMAIL?>
+Section: misc
+Priority: optional
+Standards-Version: 3.9.3
+Build-Depends: fpc, lazarus, lcl, lcl-utils, debhelper (>= 8)
+Homepage: https://github.com/artem78/AutoScreenshot
+Vcs-Git: https://github.com/artem78/AutoScreenshot.git
+Vcs-Browser: https://github.com/artem78/AutoScreenshot
+
+Package: ?PACKAGE_NAME?
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, openssl, libsqlite3-0
+Description: ?DESCRIPTION?
+ ?DESCRIPTION_LONG?
+"/>
+      <Item5 Name="lazpackager/deb/tpl_copyright" Value="Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Source: https://github.com/artem78/AutoScreenshot
+Upstream-Contact: ?MAINTAINER? &lt;?MAINTAINER_EMAIL?>
+
+Files: *
+Copyright: ?COPYRIGHT?
+License: GPL-3
+"/>
+      <Item6 Name="lazpackager/deb/tpl_rules" Value="#!/usr/bin/make -f
+
+ROOT = $(CURDIR)/debian/?PACKAGE_NAME?
+
+override_dh_auto_clean:
+	$(RM) -r lib
+	$(RM) lib *.res ?EXECUTABLE?
+
+override_dh_auto_build:
+	lazbuild --build-mode=&quot;Release&quot; ?PROJECT?
+
+override_dh_auto_install:
+	install -d -m 755 &quot;$(ROOT)/usr/bin&quot;
+	install -s -m 755 ?EXECUTABLE? &quot;$(ROOT)/usr/bin/autoscreenshot&quot;
+	install -d -m 755 &quot;$(ROOT)/usr/share/autoscreenshot/lang&quot;
+	cp lang/*.ini &quot;$(ROOT)/usr/share/autoscreenshot/lang/&quot;
+	chmod -R 644 &quot;$(ROOT)/usr/share/autoscreenshot/lang/&quot;
+	install -d -m 755 &quot;$(ROOT)/usr/share/applications&quot;
+	sed -e &apos;/^\s*#/d; /^\s*$$/d&apos; &quot;autoscreenshot.desktop&quot; > &quot;autoscreenshot_tmp.desktop&quot;
+	install -m 644 &quot;autoscreenshot_tmp.desktop&quot; &quot;$(ROOT)/usr/share/applications/autoscreenshot.desktop&quot;
+	for size in $$(ls -1 res | egrep -o main_icon_[0-9]+px.png | egrep -o [0-9]+); do \
+		install -d -m 755 &quot;$(ROOT)/usr/share/icons/hicolor/$${size}x$${size}/apps&quot;; \
+		install -m 644 -T &quot;res/main_icon_$${size}px.png&quot; &quot;$(ROOT)/usr/share/icons/hicolor/$${size}x$${size}/apps/autoscreenshot.png&quot;; \
+	done
+	install -d -m 755 &quot;$(ROOT)/usr/share/autoscreenshot/sounds&quot;
+	cp sounds/*.wav &quot;$(ROOT)/usr/share/autoscreenshot/sounds/&quot;
+	chmod -R 644 &quot;$(ROOT)/usr/share/autoscreenshot/sounds/&quot;
+
+%:
+	dh $@
+"/>
+      <Item7 Name="lazpackager/description" Value="Automatic screenshot maker"/>
+      <Item8 Name="lazpackager/description_long" Value="Auto Screenshot — application for automatic taking screenshots with specified time interval."/>
+      <Item9 Name="lazpackager/export_cmd" Value="?CP? *.lpi ?TEMPFOLDER?/
+?CP? *.lpr ?TEMPFOLDER?/
+?CP? *.pas ?TEMPFOLDER?/
+?CP? *.lfm ?TEMPFOLDER?/
+?CP? *.ico ?TEMPFOLDER?/
+
+?CP? -r res/ ?TEMPFOLDER?/
+?CP? *.inc ?TEMPFOLDER?/
+?CP? -r libs/ ?TEMPFOLDER?/
+?CP? -r lang/ ?TEMPFOLDER?/
+?CP? *.desktop ?TEMPFOLDER?/
+?CP? -r sounds/ ?TEMPFOLDER?/
+
+?CP? -rf debian ?TEMPFOLDER?/"/>
+      <Item10 Name="lazpackager/maintainer" Value="Artem Demin"/>
+      <Item11 Name="lazpackager/maintainer_email" Value="megabyte1024@ya.ru"/>
+      <Item12 Name="lazpackager/package_name" Value="autoscreenshot"/>
+    </CustomData>
+    <BuildModes Count="5">
+      <Item1 Name="Default" Default="True"/>
+      <Item2 Name="Debug">
+        <CompilerOptions>
+          <Version Value="11"/>
+          <PathDelim Value="\"/>
+          <Target>
+            <Filename Value="AutoScreenshot"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="libs;$(ProjOutDir)"/>
+            <OtherUnitFiles Value="libs\Cross.Codebot\source\codebot_controls;libs\Cross.Codebot\source\codebot"/>
+            <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
+            <ObjectPath Value="libs\PNGImage"/>
+          </SearchPaths>
+          <Parsing>
+            <SyntaxOptions>
+              <IncludeAssertionCode Value="True"/>
+            </SyntaxOptions>
+          </Parsing>
+          <CodeGeneration>
+            <Checks>
+              <IOChecks Value="True"/>
+              <RangeChecks Value="True"/>
+              <OverflowChecks Value="True"/>
+              <StackChecks Value="True"/>
+            </Checks>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <DebugInfoType Value="dsDwarf2Set"/>
+              <UseHeaptrc Value="True"/>
+              <UseExternalDbgSyms Value="True"/>
+            </Debugging>
+            <Options>
+              <Win32>
+                <GraphicApplication Value="True"/>
+              </Win32>
+            </Options>
+          </Linking>
+          <Other>
+            <CustomOptions Value="-dSIMULATE_OLD_FILES_DELETION"/>
+            <OtherDefines Count="1">
+              <Define0 Value="SIMULATE_OLD_FILES_DELETION"/>
+            </OtherDefines>
+          </Other>
+        </CompilerOptions>
+      </Item2>
+      <Item3 Name="Release">
+        <CompilerOptions>
+          <Version Value="11"/>
+          <PathDelim Value="\"/>
+          <Target>
+            <Filename Value="AutoScreenshot"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="libs;$(ProjOutDir)"/>
+            <OtherUnitFiles Value="libs\Cross.Codebot\source\codebot_controls;libs\Cross.Codebot\source\codebot"/>
+            <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
+            <ObjectPath Value="libs\PNGImage"/>
+          </SearchPaths>
+          <CodeGeneration>
+            <SmartLinkUnit Value="True"/>
+            <Optimizations>
+              <OptimizationLevel Value="3"/>
+            </Optimizations>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <GenerateDebugInfo Value="False"/>
+              <DebugInfoType Value="dsDwarf2Set"/>
+            </Debugging>
+            <LinkSmart Value="True"/>
+            <Options>
+              <Win32>
+                <GraphicApplication Value="True"/>
+              </Win32>
+            </Options>
+          </Linking>
+          <Other>
+            <CustomOptions Value="-B"/>
+            <OtherDefines Count="1">
+              <Define0 Value="SIMULATE_OLD_FILES_DELETION"/>
+            </OtherDefines>
+          </Other>
+        </CompilerOptions>
+      </Item3>
+      <Item4 Name="Release (32bit)">
+        <CompilerOptions>
+          <Version Value="11"/>
+          <PathDelim Value="\"/>
+          <Target>
+            <Filename Value="AutoScreenshot"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="libs;$(ProjOutDir)"/>
+            <OtherUnitFiles Value="libs\Cross.Codebot\source\codebot_controls;libs\Cross.Codebot\source\codebot"/>
+            <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
+            <ObjectPath Value="libs\PNGImage"/>
+          </SearchPaths>
+          <CodeGeneration>
+            <SmartLinkUnit Value="True"/>
+            <TargetCPU Value="i386"/>
+            <Optimizations>
+              <OptimizationLevel Value="3"/>
+            </Optimizations>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <GenerateDebugInfo Value="False"/>
+              <DebugInfoType Value="dsDwarf2Set"/>
+            </Debugging>
+            <LinkSmart Value="True"/>
+            <Options>
+              <Win32>
+                <GraphicApplication Value="True"/>
+              </Win32>
+            </Options>
+          </Linking>
+          <Other>
+            <CustomOptions Value="-B"/>
+          </Other>
+        </CompilerOptions>
+      </Item4>
+      <Item5 Name="Release (64bit)">
+        <CompilerOptions>
+          <Version Value="11"/>
+          <PathDelim Value="\"/>
+          <Target>
+            <Filename Value="AutoScreenshot"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="libs;$(ProjOutDir)"/>
+            <OtherUnitFiles Value="libs\Cross.Codebot\source\codebot_controls;libs\Cross.Codebot\source\codebot"/>
+            <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
+            <ObjectPath Value="libs\PNGImage"/>
+          </SearchPaths>
+          <CodeGeneration>
+            <SmartLinkUnit Value="True"/>
+            <TargetCPU Value="x86_64"/>
+            <Optimizations>
+              <OptimizationLevel Value="3"/>
+            </Optimizations>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <GenerateDebugInfo Value="False"/>
+              <DebugInfoType Value="dsDwarf2Set"/>
+            </Debugging>
+            <LinkSmart Value="True"/>
+            <Options>
+              <Win32>
+                <GraphicApplication Value="True"/>
+              </Win32>
+            </Options>
+          </Linking>
+          <Other>
+            <CustomOptions Value="-B"/>
+          </Other>
+        </CompilerOptions>
+      </Item5>
+    </BuildModes>
+    <PublishOptions>
+      <Version Value="2"/>
+    </PublishOptions>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes Count="1">
+        <Mode0 Name="default"/>
+      </Modes>
+    </RunParams>
+    <RequiredPackages Count="7">
+      <Item1>
+        <PackageName Value="FCL"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="sqlite3laz"/>
+      </Item2>
+      <Item3>
+        <PackageName Value="playwavepackage"/>
+      </Item3>
+      <Item4>
+        <PackageName Value="BGRABitmapPack"/>
+      </Item4>
+      <Item5>
+        <PackageName Value="uniqueinstance_package"/>
+      </Item5>
+      <Item6>
+        <PackageName Value="DateTimeCtrls"/>
+      </Item6>
+      <Item7>
+        <PackageName Value="LCL"/>
+      </Item7>
+    </RequiredPackages>
+    <Units Count="19">
+      <Unit0>
+        <Filename Value="AutoScreenshot.lpr"/>
+        <IsPartOfProject Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="umainform.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="MainForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="uMainForm"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="uAbout.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="AboutForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="uLocalization.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="uUtils.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="uLanguages.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="ufilenametemplatehelpform.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="FileNameTemplateHelpForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="uFileNameTemplateHelpForm"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="screengrabber.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ScreenGrabber"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="languagecodes.inc"/>
+        <IsPartOfProject Value="True"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="uutilsmore.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uUtilsMore"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="uhotkeysform.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="HotKeysForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="uHotKeysForm"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="uinihelper.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uIniHelper"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="globalkeyhook.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="GlobalKeyHook"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="updatechecker.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="UpdateCheckerForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="UpdateChecker"/>
+      </Unit13>
+      <Unit14>
+        <Filename Value="idle.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Idle"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="xrandreventwatcher.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit15>
+      <Unit16>
+        <Filename Value="libs\Cross.Codebot\source\codebot_controls\codebot.input.hotkeys.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Codebot.Input.Hotkeys"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="oldscreenshotcleaner.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="OldScreenshotCleaner"/>
+      </Unit17>
+      <Unit18>
+        <Filename Value="udonateform.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="DonateForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="uDonateForm"/>
+      </Unit18>
+    </Units>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="11"/>
+    <PathDelim Value="\"/>
+    <Target>
+      <Filename Value="AutoScreenshot"/>
+    </Target>
+    <SearchPaths>
+      <IncludeFiles Value="libs;$(ProjOutDir)"/>
+      <OtherUnitFiles Value="libs\Cross.Codebot\source\codebot_controls;libs\Cross.Codebot\source\codebot"/>
+      <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
+      <ObjectPath Value="libs\PNGImage"/>
+    </SearchPaths>
+    <Linking>
+      <Options>
+        <Win32>
+          <GraphicApplication Value="True"/>
+        </Win32>
+      </Options>
+    </Linking>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions Count="5">
+      <Item1>
+        <Name Value="EAbort"/>
+      </Item1>
+      <Item2>
+        <Name Value="ECodetoolError"/>
+      </Item2>
+      <Item3>
+        <Name Value="EFOpenError"/>
+      </Item3>
+      <Item4>
+        <Name Value="ELocalizerException"/>
+      </Item4>
+      <Item5>
+        <Name Value="Exception"/>
+      </Item5>
+    </Exceptions>
+  </Debugging>
+</CONFIG>

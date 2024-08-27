@@ -1,9 +1,11 @@
 unit uLocalization;
 
+{$MODE objfpc}
+
 interface
 
 uses
-  TntIniFiles, SysUtils, TntClasses;
+  IniFiles, SysUtils, Classes;
 
 type
   TLanguageCode = String[2];
@@ -23,12 +25,12 @@ type
   TLocalizer = class
   private
     LangInfo: TLanguageInfo;
-    Strings: TTntStringList;
+    Strings: TStringList;
     LangsDir: String;
     UseAltsForMissedStrings: Boolean; // Try or not read missed strings from default or alternative languages
 
     function GetLanguageInfo: TLanguageInfo;
-    class function GetLanguageInfoFromIni(const AnIni: TTntMemIniFile): TLanguageInfo;
+    class function GetLanguageInfoFromIni(const AnIni: TMemIniFile): TLanguageInfo;
     procedure ClearLangInfoAndStrings;
   public
     constructor Create(ALangsDir: String; AnUseAltsForMissedStrings: Boolean = True);
@@ -47,7 +49,7 @@ var
 
 implementation
 
-uses uUtils, Classes, StrUtils;
+uses uUtils, FileUtil, LazFileUtils, {Classes,} StrUtils;
 
 { TLocalizer }
 
@@ -68,7 +70,7 @@ end;
 
 constructor TLocalizer.Create(ALangsDir: String; AnUseAltsForMissedStrings: Boolean);
 begin
-  Strings := TTntStringList.Create;
+  Strings := TStringList.Create;
   Strings.NameValueSeparator := '=';
   LangInfo.AlternativeFor := nil;
   ClearLangInfoAndStrings;
@@ -91,7 +93,7 @@ begin
 end;
 
 class function TLocalizer.GetLanguageInfoFromIni(
-  const AnIni: TTntMemIniFile): TLanguageInfo;
+  const AnIni: TMemIniFile): TLanguageInfo;
 const
   IniSection = 'info';
 var
@@ -118,7 +120,7 @@ var
   SearchRes: TSearchRec;
   LangsCount: integer;
   Idx: integer;
-  Ini: TTntMemIniFile;
+  Ini: TMemIniFile;
 begin
   // Get amount of available languages
   LangsCount := 0;
@@ -139,7 +141,7 @@ begin
   if FindFirst(LangsDir + '*.ini', faAnyFile, SearchRes) = 0 then
   begin
     repeat
-      Ini := TTntMemIniFile.Create(LangsDir + SearchRes.Name);
+      Ini := TMemIniFile.Create(LangsDir + SearchRes.Name);
       try
         try
           Inc(Idx);
@@ -174,13 +176,12 @@ procedure TLocalizer.LoadFromFile(AFileName: String);
 const
   TranslationIniSection = 'translation';
 var
-  FileName: String;
-  Ini: TTntMemIniFile;
-  TmpStr: TTntStringList;
+  Ini: TMemIniFile;
+  TmpStr: TStringList;
   AllLangs: TLanguagesArray;
   AltLang: TLanguageCode;
 
-  procedure CombineValues(L1: TTntStrings; const L2: TTntStrings);
+  procedure CombineValues(L1: TStrings; const L2: TStrings);
   var
     Idx: integer;
   begin
@@ -192,10 +193,10 @@ begin
 
   { Check if selected translation file exists }
   if not FileExists(AFileName) then
-    raise ELocalizerException.CreateFmt('Can`t open localization file "%s"', [FileName]);
+    raise ELocalizerException.CreateFmt('Can`t open localization file "%s"', [AFileName]);
 
   { Read language info }
-  Ini := TTntMemIniFile.Create(AFileName);
+  Ini := TMemIniFile.Create(AFileName);
   try
     LangInfo := GetLanguageInfoFromIni(Ini);
   finally
@@ -207,7 +208,7 @@ begin
     { Read strings from default (English) translation }
     if not AnsiEndsStr('en.ini', AFileName) then // Skip for English
     begin
-      Ini := TTntMemIniFile.Create(LangsDir + 'en.ini');
+      Ini := TMemIniFile.Create(LangsDir + 'en.ini');
       try
         Ini.ReadSectionValues(TranslationIniSection, Strings);
       finally
@@ -220,8 +221,8 @@ begin
     AltLang := GetAlternativeLanguage(AllLangs, LangInfo.Code);
     if AltLang <> '' then
     begin
-      Ini := TTntMemIniFile.Create(LangsDir + AltLang + '.ini');
-      TmpStr := TTntStringList.Create;
+      Ini := TMemIniFile.Create(LangsDir + AltLang + '.ini');
+      TmpStr := TStringList.Create;
       try
         Ini.ReadSectionValues(TranslationIniSection, TmpStr);
         CombineValues(Strings, TmpStr);
@@ -232,10 +233,10 @@ begin
   end;
 
   { Read and update strings from specified translation }
-  Ini := TTntMemIniFile.Create(AFileName);
+  Ini := TMemIniFile.Create(AFileName);
   try
     // Combine translation strings with defaults
-    TmpStr := TTntStringList.Create;
+    TmpStr := TStringList.Create;
     try
       Ini.ReadSectionValues(TranslationIniSection, TmpStr);
       CombineValues(Strings, TmpStr);
@@ -247,10 +248,23 @@ begin
   end;
 end;
 
+var
+  LangDir: String;
+
 initialization
 begin
+  {$IfDef Windows}
+  LangDir := AppendPathDelim(ConcatPaths([ProgramDirectory, 'lang']));
+  {$EndIf}
+  {$IfDef Linux}
+  if IsPortable then
+    LangDir := AppendPathDelim(ConcatPaths([ProgramDirectory, 'lang']))
+  else
+    LangDir := '/usr/share/autoscreenshot/lang/';
+  {$EndIf}
+
   // ToDo: Use alternatives only in Release build
-  Localizer := TLocalizer.Create(ExtractFilePath(ParamStr(0)) + 'lang' + PathDelim, True);
+  Localizer := TLocalizer.Create(LangDir, True);
 end;
 
 finalization

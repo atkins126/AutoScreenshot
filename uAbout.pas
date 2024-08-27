@@ -1,24 +1,38 @@
 unit uAbout;
 
+{$MODE objfpc}
+
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ShellApi, ExtCtrls, TntForms, TntStdCtrls, TntExtCtrls;
+  {Windows, Messages,} SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, {ShellApi,} LCLIntf, ExtCtrls, ButtonPanel;
 
 type
-  TAboutForm = class(TTntForm)
-    ProgramNameLabel: TTntLabel;
-    VersionLabel: TTntLabel;
-    AuthorLabel: TTntLabel;
-    CloseButton: TTntButton;
-    LinkLabel: TTntLabel;
-    Logo: TTntImage;
-    BuildDateLabel: TTntLabel;
-    LocalizationAuthorLabel: TTntLabel;
-    procedure CloseButtonClick(Sender: TObject);
+
+  { TAboutForm }
+
+  TAboutForm = class(TForm)
+    ButtonPanel: TButtonPanel;
+    BuildDateValueLabel: TLabel;
+    AuthorValueLabel: TLabel;
+    CompillerTitleLabel: TLabel;
+    CompillerValueLabel: TLabel;
+    LinkTitleLabel: TLabel;
+    LicenseValueLabel: TLabel;
+    LocalizationAuthorValueLabel: TLabel;
+    VersionValueLabel: TLabel;
+    LicenseTitleLabel: TLabel;
+    Panel: TPanel;
+    ProgramNameLabel: TLabel;
+    VersionTitleLabel: TLabel;
+    AuthorTitleLabel: TLabel;
+    LinkValueLabel: TLabel;
+    Logo: TImage;
+    BuildDateTitleLabel: TLabel;
+    LocalizationAuthorTitleLabel: TLabel;
     procedure FormCreate(Sender: TObject);
-    procedure LinkLabelClick(Sender: TObject);
+    procedure LinkValueLabelClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -30,59 +44,99 @@ var
 
 implementation
 
-uses uLocalization, uUtils, DateUtils;
+uses uLocalization, uUtils, LazVersion, DateUtils, StrUtils;
 
-{$R *.dfm}
+{$R *.lfm}
 
 const
-  ProjectGitHubURL{: WideString} = 'https://github.com/artem78/AutoScreenshot#readme';
-
-procedure TAboutForm.CloseButtonClick(Sender: TObject);
-begin
-  Close;
-end;
+  ProjectURLTitle = 'https://github.com/artem78/AutoScreenshot';
+  ProjectURL = ProjectURLTitle + '#readme';
 
 procedure TAboutForm.FormCreate(Sender: TObject);
+const
+  Bitness =
+  {$IF defined(CPU64)}
+    '64-bit'
+  {$ElseIf defined(CPU32)}
+    '32-bit'
+  {$Else}
+    '' // Unknown
+  {$ENDIF}
+  ;
+  License = {'GNU General Public License v3.0'} 'GNU GPLv3';
 var
-  BuildDate: TDateTime;
-  BuildDateStr: WideString;
+  Png: TPortableNetworkGraphic;
+  ResourceName: String;
 begin
   Caption := Localizer.I18N('About');
 
-  Logo.Picture.Icon.Handle := LoadImage(HInstance, 'MAINICON', IMAGE_ICON,
-      64, 64, LR_DEFAULTCOLOR);
+  //Logo.Picture.Icon.Handle := LoadImage(HInstance, 'MAINICON', IMAGE_ICON,
+  //    64, 64, LR_DEFAULTCOLOR);
+  //Logo.Picture.LoadFromLazarusResource('_LOGO');
+  if Screen.PixelsPerInch <= 120 then // Scale = 100% or 125%
+    ResourceName := '_LOGO' // Default size with 64px width
+  else // Scale = 150% or 200%
+    ResourceName := '_LOGO_HIGH_DPI'; // High resolution with 128px width
 
-  ProgramNameLabel.Caption := TntApplication.Title;
-  VersionLabel.Caption := Localizer.I18N('Version') + ': ' + GetProgramVersionStr(True);
-  AuthorLabel.Caption := Localizer.I18N('Author') + ': ' + 'Artem Demin (artem78) <megabyte1024@ya.ru>';
+  png := TPortableNetworkGraphic.Create;
+  try
+     Png.LoadFromResourceName(Hinstance, ResourceName);
+     Logo.Picture.Graphic := Png;
+  finally
+     Png.Free;
+  end;
+
+  ProgramNameLabel.Caption := Application.Title;
+
+  VersionTitleLabel.Caption := Localizer.I18N('Version') + ':';
+  VersionValueLabel.Caption := Format('%s (%s) %s', [
+          GetProgramVersionStr(), Bitness,
+          IfThen(IsPortable, Localizer.I18N('Portable'))
+  ]);
+  {$IFOPT D+}
+    VersionValueLabel.Caption := VersionValueLabel.Caption + '    [DEBUG BUILD]';
+  {$ENDIF}
+
+  AuthorTitleLabel.Caption := Localizer.I18N('Author') + ':';
+  AuthorValueLabel.Caption := 'Artem Demin (artem78) <megabyte1024@ya.ru>';
   with Localizer.LanguageInfo do
   begin
     if (Code <> 'en') and (Author <> '') then
     begin
-      LocalizationAuthorLabel.Caption := Localizer.I18N('LocalizationAuthor') + ': ' + Author;
-      LocalizationAuthorLabel.Show;
+      LocalizationAuthorTitleLabel.Caption := Localizer.I18N('LocalizationAuthor') + ':';
+      LocalizationAuthorTitleLabel.Show;
+
+      LocalizationAuthorValueLabel.Caption := Author;
+      LocalizationAuthorValueLabel.Show;
     end
     else
-      LocalizationAuthorLabel.Hide;
+    begin
+      LocalizationAuthorTitleLabel.Hide;
+      LocalizationAuthorValueLabel.Hide;
+    end;
   end;
-  LinkLabel.Caption := ProjectGitHubURL;
 
-  BuildDate := GetLinkerTimeStamp;
-  { Check if date is correct
-    (Older versions of Delphi may put incorrect TimeDateStamp in exe
-    without this patch - http://cc.embarcadero.com/Item/19823) }
-  if YearOf(BuildDate) < 2000 then
-    BuildDateStr := 'unknown'
-  else
-    BuildDateStr := FormatDateTime({'dddddd tt'} 'dddddd', BuildDate);
-  BuildDateLabel.Caption := Localizer.I18N('BuildDate') + ': ' + BuildDateStr;
+  LinkTitleLabel.Caption := Localizer.I18N('HomePage') + ':';
+  LinkValueLabel.Caption := ProjectURLTitle;
 
-  CloseButton.Caption := Localizer.I18N('Close');
+  BuildDateTitleLabel.Caption := Localizer.I18N('BuildDate') + ':';
+  BuildDateValueLabel.Caption := FormatDateTime('dddddd', GetBuildDateTime);
+
+  LicenseTitleLabel.Caption := Localizer.I18N('License') + ':';
+  LicenseValueLabel.Caption := License;
+
+  ButtonPanel.CloseButton.Caption := Localizer.I18N('Close');
+
+  CompillerTitleLabel.Caption := Localizer.I18N('Compiller') + ':';
+  CompillerValueLabel.Caption := Format('FPC %s / Lazarus %s',
+                                 [{$I %FPCVersion%}, laz_version]);
+
+  // FixMe: Close button icon not hidden
 end;
 
-procedure TAboutForm.LinkLabelClick(Sender: TObject);
+procedure TAboutForm.LinkValueLabelClick(Sender: TObject);
 begin
-  ShellExecute(handle, 'open', ProjectGitHubURL, nil, nil, SW_SHOW);
+  OpenURL(ProjectURL);
 end;
 
 end.
